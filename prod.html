@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>GadgetHub-Enjoy!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+  <header class="sticky top-0 z-50 bg-gradient-to-r from-indigo-900 to-purple-700 shadow">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="icons8-shop.gif" alt="logo" class="w-9 h-9 rounded-full" />
+        <h1 class="text-2xl font-bold">GadgetHub</h1>
+      </div>
+      <nav class="flex items-center gap-2">
+        <a href="index.html">
+            <button class="px-3 py-2 bg-white/10 rounded-md hover:bg-white/20">Home</button>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-6">
+      <div class="flex-1">
+        <div class="flex flex-wrap gap-3 items-center mb-4">
+          <input id="search" type="search" placeholder="Search gadgets..." class="px-3 py-2 rounded-md text-gray-900 w-full sm:w-64" />
+          <select id="category" class="px-3 py-2 rounded-md text-gray-900">
+            <option value="all">All categories</option>
+            <option value="audio">Audio</option>
+            <option value="mobile">Mobile</option>
+            <option value="accessory">Accessory</option>
+            <option value="smart">Smart Home</option>
+          </select>
+          <button id="clear" class="px-3 py-2 rounded-md bg-white/10 hover:bg-white/20">Clear</button>
+        </div>
+
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        </div>
+      </div>
+
+      <aside class="w-full lg:w-96 bg-white/5 rounded-lg p-4 shadow-inner">
+        <h3 class="text-xl font-bold mb-2">Product Details</h3>
+        <div id="details-empty" class="text-sm text-gray-300">Select a product to view details.</div>
+
+        <div id="details" class="hidden space-y-3">
+          <img id="details-img" src="" alt="product" class="w-full h-56 object-cover rounded-md" />
+          <div>
+            <h4 id="details-title" class="text-lg font-bold"></h4>
+            <div id="details-meta" class="text-sm text-gray-300"></div>
+            <p id="details-desc" class="mt-2 text-gray-200 text-sm"></p>
+          </div>
+          <div class="flex gap-2">
+            <button id="toggle-highlight" class="px-3 py-2 bg-indigo-600 rounded-md hover:bg-indigo-500">Toggle Highlight</button>
+            <button id="clear-selection" class="px-3 py-2 bg-white/10 rounded-md hover:bg-white/20">Clear</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const products = [
+      { id: 1, name: 'BassPro Wireless Earbuds', category: 'audio', price: '₹699.50', rating: 4.4, desc: 'Deep bass, 24h battery', img: 'https://images.samsung.com/is/image/samsung/p6pim/in/2407/gallery/in-galaxy-buds3-pro-r630-sm-r630nzaainu-542134810?$684_547_PNG$' },
+      { id: 2, name: 'FlexCharge Power Bank 20k', category: 'accessory', price: '₹8000', rating: 4.2, desc: 'Fast charge, slim design', img: 'https://m.media-amazon.com/images/I/21lpPHR+YXL._SY300_SX300_QL70_FMwebp_.jpg' },
+      { id: 3, name: 'PixelPhone Lite', category: 'mobile', price: '₹10,000', rating: 4.6, desc: 'Great camera, lightweight', img: 'https://imgs.search.brave.com/oMsXOmiNcqmnTuBn-57ctP2shROoEu6ouyWLDfzxnzU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9hLnRo/dW1icy5yZWRkaXRt/ZWRpYS5jb20vTjQ4/MTh2U05zaThHVVlf/bWg4ZUJpNmFHUGR6/R1lZXzRWQzNXTWJO/aDU5NC5qcGc' },
+      { id: 4, name: 'SmartLamp Pro', category: 'smart', price: '₹1', rating: 4.5, desc: 'Voice control + warm/cool light', img: 'https://m.media-amazon.com/images/I/61on5O5FWKL._AC_SX679_.jpg' },
+      { id: 5, name: 'Shrek', category: 'accessory', price: '₹3000', rating: 4.1, desc: 'GOAT', img: 'https://imgs.search.brave.com/hRFzLRYHYDLpOVF8YczTfWY_6hA1CfczhGI4WlRF6vo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMuZmFuZG9tc3Bv/dC5jb20vaW1hZ2Vz/LzExLzEwMzg4LzAw/Mi1zaHJlay1tZW1l/LmpwZw' },
+      { id: 6, name: 'StudioHead Over-ear', category: 'audio', price: '₹70', rating: 4.7, desc: 'Noise-canceling, comfy fit', img: 'https://imgs.search.brave.com/YNHlqlohGPUEcFezjzg_RIKbO5-5U1_H2rw7YzqGq5o/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9hdnN0/b3JlLmluL2Nkbi9z/aG9wL2ZpbGVzLzEu/QVZTdG9yZS1Tb25v/cy1BY2UtRnJvbnQt/QW5nbGVkLVZpZXct/SGVyby1CbGFjay5q/cGc_dj0xNzI1NjIw/ODcwJndpZHRoPTIw/MDA' }
+    ];
+
+    let selectedId = null;
+    let currentCategory = 'all';
+    let searchTerm = '';
+
+    const productsGrid = document.getElementById('products-grid');
+    const searchInput = document.getElementById('search');
+    const categorySelect = document.getElementById('category');
+    const clearBtn = document.getElementById('clear');
+
+    const detailsEmpty = document.getElementById('details-empty');
+    const detailsPanel = document.getElementById('details');
+    const detailsImg = document.getElementById('details-img');
+    const detailsTitle = document.getElementById('details-title');
+    const detailsMeta = document.getElementById('details-meta');
+    const detailsDesc = document.getElementById('details-desc');
+    const toggleHighlightBtn = document.getElementById('toggle-highlight');
+    const clearSelectionBtn = document.getElementById('clear-selection');
+
+    function renderProducts() {
+      productsGrid.innerHTML = '';
+      const filtered = products.filter(p => {
+        const matchesCategory = currentCategory === 'all' || p.category === currentCategory;
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesCategory && matchesSearch;
+      });
+
+      filtered.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card bg-white/5 rounded-lg p-3 cursor-pointer hover:scale-[1.01] transition relative';
+        card.dataset.id = p.id;
+        card.innerHTML = `
+          <img src="${p.img}" alt="${escapeHtml(p.name)}" class="w-full h-40 object-cover rounded-md mb-3">
+          <div class="font-semibold">${escapeHtml(p.name)}</div>
+          <div class="text-sm text-gray-300">${p.price} • Rating: ${p.rating}</div>
+        `;
+        card.addEventListener('click', () => selectProduct(p.id));
+        if (p.id === selectedId) {
+          card.classList.add('ring-4', 'ring-indigo-500');
+        }
+        productsGrid.appendChild(card);
+      });
+
+      if (filtered.length === 0) {
+        productsGrid.innerHTML = '<div class="text-center text-gray-400">No products found.</div>';
+      }
+    }
+
+    function selectProduct(id) {
+      const product = products.find(x => x.id === id);
+      if (!product) return;
+      selectedId = id;
+
+      document.querySelectorAll('.product-card').forEach(c => {
+        c.classList.remove('ring-4', 'ring-indigo-500', 'bg-indigo-800/20');
+      });
+
+      const clicked = document.querySelector(`.product-card[data-id='${id}']`);
+      if (clicked) clicked.classList.add('ring-4', 'ring-indigo-500');
+
+      detailsImg.src = product.img;
+      detailsTitle.textContent = product.name;
+      detailsMeta.textContent = `${capitalize(product.category)} • ${product.price} • Rating ${product.rating}`;
+      detailsDesc.textContent = product.desc;
+
+      detailsEmpty.classList.add('hidden');
+      detailsPanel.classList.remove('hidden');
+      detailsPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    toggleHighlightBtn.addEventListener('click', () => {
+      if (!selectedId) return alert('Select a product first.');
+      const card = document.querySelector(`.product-card[data-id='${selectedId}']`);
+      if (!card) return;
+      card.classList.toggle('bg-indigo-800/20');
+    });
+
+    clearSelectionBtn.addEventListener('click', () => {
+      selectedId = null;
+      document.querySelectorAll('.product-card').forEach(c => c.classList.remove('ring-4', 'ring-indigo-500', 'bg-indigo-800/20'));
+      detailsPanel.classList.add('hidden');
+      detailsEmpty.classList.remove('hidden');
+    });
+
+    searchInput.addEventListener('input', (e) => {
+      searchTerm = e.target.value.trim();
+      renderProducts();
+    });
+
+    categorySelect.addEventListener('change', (e) => {
+      currentCategory = e.target.value;
+      renderProducts();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      currentCategory = 'all';
+      searchTerm = '';
+      searchInput.value = '';
+      categorySelect.value = 'all';
+      renderProducts();
+    });
+
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function escapeHtml(s) { return (s+'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    renderProducts();
+  </script>
+</body>
+</html>
